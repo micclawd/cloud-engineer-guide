@@ -655,4 +655,103 @@ A Helm chart = templated YAML + values.yaml. Think "npm for Kubernetes".
 - [ ] Write a NetworkPolicy that allows traffic only from pods with label `app=frontend`
 
 ---
+
+## Module 8B: OpenShift (OCP)
+
+OpenShift = Red Hat's enterprise distribution of Kubernetes. It **is** Kubernetes, plus a curated set of additions for security, developer experience, and operations.
+
+### OpenShift vs Vanilla Kubernetes
+
+| Area | Vanilla K8s | OpenShift |
+|------|------------|-----------|
+| Container runtime | Any CRI runtime | CRI-O only (curated) |
+| HTTP entry | Ingress | **Route** (Ingress also works) |
+| Builds | External CI builds images | **BuildConfig + ImageStream** build images in-cluster from source |
+| Pod security | PodSecurity standards | **SecurityContextConstraints (SCC)** — stricter by default (no root!) |
+| Extensions | Operators (community) | **OperatorHub** — curated, certified operators |
+| Updates | You manage | Cluster Version Operator handles upgrades |
+| Console | Dashboard (optional) | Full web console built in |
+| Registry | Bring your own | Internal image registry built in |
+| Multi-tenancy | DIY namespaces | Projects (namespace + RBAC + quotas baked in) |
+
+### The OCP-Only Objects
+
+```
+[Git repo] --(BuildConfig: source-to-image)--> [ImageStream: myapp:latest]
+                                                      |
+                                                      v
+[Route: myapp.apps.cluster.example.com] <--- [Service] <--- [DeploymentConfig / Deployment]
+```
+
+- **Route:** Like Ingress but older and richer (TLS edge/reencrypt/passthrough built in).
+- **BuildConfig:** "Build this Git repo into a container image when code changes" — CI inside the cluster.
+- **ImageStream:** Versioned pointer to images; triggers redeploys on new image.
+- **Operator:** A controller that manages an application (e.g., an Operator that installs and manages PostgreSQL). OCP's OperatorHub is the curated app store.
+- **SCC:** Defines what pods *may* do (run as root? host networking? privileged?). Default `restricted-v2` blocks root containers — the #1 gotcha when porting vanilla K8s apps to OCP.
+
+### ASCII: SCC Gotcha
+
+```
+Vanilla K8s:  pod runs as root by default     ---> works
+OpenShift:    pod gets random non-root UID    ---> app crashes writing to /root-owned dirs
+
+Fix: design containers to run as arbitrary UID (chmod g+rw, use /tmp, no hardcoded UID)
+```
+
+### Ways to Run OpenShift
+
+| Option | Cost | Notes |
+|--------|------|-------|
+| **OpenShift Local** (formerly CodeReady Containers) | Free | Single-node OCP on your Mac, needs ~9GB RAM. Best for learning. |
+| Developer Sandbox | Free | Red Hat hosted shared cluster, 30-day rotating access, no install |
+| Self-managed OCP | Paid license | Full install on bare metal / VMware / Nutanix |
+| **ROSA** | AWS bill + OCP fee | Red Hat OpenShift Service on AWS (managed) |
+| **ARO** | Azure bill + OCP fee | Azure Red Hat OpenShift (managed) |
+
+For learning: **OpenShift Local** or the **Developer Sandbox**. No cloud target needed.
+
+### Your First OCP App (from source, no Dockerfile)
+
+```bash
+# With OpenShift Local running:
+oc login -u developer https://api.crc.testing:6443
+
+oc new-project demo
+oc new-app https://github.com/sclorg/nodejs-ex --name=hello
+oc expose service hello
+oc get route hello          # gives you a public URL on the cluster
+oc logs -f bc/hello         # watch the source-to-image build
+oc delete project demo
+```
+
+That's it — OCP cloned the repo, built a container image from source, deployed it, and gave it a route. No Dockerfile, no external CI.
+
+### CLI Mapping (kubectl vs oc)
+
+```bash
+kubectl get pods          ==  oc get pods          # oc is a superset
+                            oc new-app ...          # OCP only
+                            oc new-project x        # namespace + RBAC in one
+                            oc start-build hello    # trigger BuildConfig
+```
+
+Everything you know from Module 8A transfers. Learn K8s first, then OCP's deltas.
+
+### Reading
+
+- [OpenShift Documentation](https://docs.openshift.com/)
+- [OpenShift Interactive Learning Portal](https://learn.openshift.com/) (free browser labs)
+- [OpenShift Local](https://developers.redhat.com/products/openshift-local/overview)
+- [Developer Sandbox](https://developers.redhat.com/developer-sandbox)
+
+### Hands-On Checkpoint
+
+- [ ] Install OpenShift Local (`brew install crc`, `crc setup`, `crc start`) or sign up for the Developer Sandbox
+- [ ] `oc new-app` a sample app from GitHub, expose a Route, hit the URL
+- [ ] Trigger a rebuild after editing nothing (`oc start-build`) and watch a new rollout
+- [ ] Try deploying a container that runs as root — observe the SCC failure, then fix the image/config
+- [ ] Install an Operator from OperatorHub (e.g., a database operator) and create an instance of its CRD
+- [ ] Explain out loud: Route vs Ingress, BuildConfig vs external CI, SCC vs PodSecurity
+
+---
 *Generated by Hermes. Last updated: 2026-09-21.*
