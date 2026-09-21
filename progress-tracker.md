@@ -1,6 +1,69 @@
 # Progress Tracker
 
-> Work through the roadmap phases in [README.md](README.md). Tick these as you go.
+> Work through the roadmap phases in [README.md](README.md). Tick these as you go. Each phase has cloud and air-gapped variants — tick whichever track you did.
+
+## Phase 0 — Foundations
+- [ ] Git: 10+ commits, a branch, a PR, a merge in a practice repo
+- [ ] Linux Journey "Grasshopper" track done
+- [ ] Bash survival: variables, loops, pipes, grep
+- [ ] (Cloud) AWS account: root MFA, IAM admin user, $10 billing alarm
+- [ ] (Cloud) SSH'd into EC2: created user, vim'd a file, installed nginx, opened port 80
+- [ ] (Air-gap) 3 VMs on Nutanix (Ubuntu/Rocky)
+- [ ] (Air-gap) Gitea or GitLab CE installed on one VM, pushed a repo from workstation over LAN
+- [ ] (Air-gap) Hostname/hosts/NTP set on all three VMs
+
+## Phase 1 — Infrastructure Core
+- [ ] (Cloud) Hand-built VPC: 2 public + 2 private subnets, 2 AZs
+- [ ] (Cloud) Web server behind ALB; RDS in private subnet reachable only from app tier (proved with a failed connection)
+- [ ] (Cloud) S3 bucket versioned + encrypted; everything tagged; torn down
+- [ ] (Air-gap) 3-tier build on VMs: LB (nginx/HAProxy) → app → DB in separate segments
+- [ ] (Air-gap) MinIO running as S3-compatible object store
+- [ ] (Air-gap) Build documented as a runbook (Phase 2 input)
+- [ ] Can draw the 3-tier architecture from memory in both vocabularies
+
+## Phase 2 — Infrastructure as Code
+- [ ] (Cloud) Phase 1 capstone rebuilt entirely in Terraform; apply→destroy→apply verified
+- [ ] (Cloud) Remote state in S3 + DynamoDB locking
+- [ ] (Air-gap) Terraform Nutanix provider OR Ansible roles provisioning the 3 tiers
+- [ ] (Air-gap) From clean VMs → working stack, twice in a row
+- [ ] Console-clicking now feels gross
+
+## Phase 3 — CI/CD
+- [ ] Dockerized a small app (own Dockerfile)
+- [ ] (Cloud) GitHub Actions: push → test → build → push image to GHCR → deploy
+- [ ] (Air-gap) GitLab CI: push → test → build → push to internal registry → deploy via runner
+- [ ] (Air-gap) Practiced docker save → transfer → docker load pattern
+- [ ] Broke the build on purpose and watched the pipeline catch it
+
+## Phase 4 — Containers & Orchestration
+- [ ] App on K8s: Deployment + Service + Ingress + ConfigMap + Secret
+- [ ] Killed a pod, watched self-heal; scaled; rolled out and rolled back
+- [ ] (Air-gap) k3s installed offline (binary + images tarball)
+- [ ] (Air-gap) k3s pulls ONLY from internal registry (registries.yaml) — simulated disconnected cluster
+- [ ] Same app on OpenShift Local via `oc new-app`
+- [ ] Hit and fixed the SCC root-user gotcha
+- [ ] Can explain Pod/Deployment/Service/Ingress + Route/BuildConfig + how images enter a sealed cluster
+
+## Phase 5 — Observability
+- [ ] (Cloud) CloudWatch alarm → SNS → email working
+- [ ] (Air-gap) Prometheus + Grafana + Loki + Alertmanager running on VMs
+- [ ] (Air-gap) Prometheus scraping k3s; one alert rule fired on purpose
+- [ ] Dashboard for the Phase 3/4 stack
+
+## Phase 6 — Portfolio
+- [ ] Project 1: static site + CI/CD deployed
+- [ ] Project 4: K8s deployment with Terraform/Ansible, README + diagram
+- [ ] Project 5: OpenShift variant
+- [ ] Differentiator: full air-gapped delivery documented (GitLab + registry + k3s + Prometheus + transfer-bundle script)
+- [ ] Every repo has what/why/architecture/how-to-run
+
+## Certifications (optional)
+- [ ] AWS Solutions Architect Associate (after Phase 2)
+- [ ] CKA (after Phase 4)
+- [ ] Red Hat EX280 OpenShift (if targeting gov/finance/defence)
+
+---
+<details><summary>Old per-module checklist (curriculum reference)</summary>
 
 ## Phase 0 — Foundations
 - [ ] Git: 10+ commits, a branch, a PR, a merge in a practice repo
@@ -145,3 +208,4 @@
 - [ ] AWS SysOps Administrator Associate
 - [ ] CKA (optional, after Module 8A)
 - [ ] Red Hat EX280 OpenShift (optional, after Module 8B)
+</details>
