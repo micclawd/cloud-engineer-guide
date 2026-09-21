@@ -1,5 +1,59 @@
 # Progress Tracker
 
+> Work through the roadmap phases in [README.md](README.md). Tick these as you go.
+
+## Phase 0 — Foundations
+- [ ] Git: 10+ commits, a branch, a PR, a merge in a practice repo
+- [ ] Linux Journey "Grasshopper" track done
+- [ ] Bash survival: variables, loops, pipes, grep
+- [ ] AWS account: root MFA, IAM admin user, $10 billing alarm
+- [ ] SSH'd into EC2: created user, vim'd a file, installed nginx, opened port 80
+
+## Phase 1 — Cloud Core
+- [ ] Hand-built VPC: 2 public + 2 private subnets, 2 AZs
+- [ ] Web server behind ALB in public subnet
+- [ ] RDS in private subnet, reachable only from web tier
+- [ ] S3 bucket: versioned, encrypted
+- [ ] Everything tagged, then torn down
+- [ ] Can draw the architecture from memory
+
+## Phase 2 — Infrastructure as Code
+- [ ] Phase 1 capstone rebuilt entirely in Terraform
+- [ ] Variables for environment/instance sizes
+- [ ] apply → destroy → apply cycle verified working
+- [ ] Remote state in S3 + DynamoDB locking
+- [ ] Console-clicking now feels gross
+
+## Phase 3 — CI/CD
+- [ ] Dockerized a small app (own Dockerfile)
+- [ ] GitHub Actions: push → test → build → push image to registry
+- [ ] Auto-deploy on merge to main
+- [ ] Broke the build on purpose and watched the pipeline catch it
+
+## Phase 4 — Containers & Orchestration
+- [ ] App on local K8s: Deployment + Service + Ingress + ConfigMap + Secret
+- [ ] Killed a pod, watched self-heal; scaled; rolled out and rolled back
+- [ ] Same app on OpenShift Local via `oc new-app`
+- [ ] Hit and fixed the SCC root-user gotcha
+- [ ] Can explain Pod/Deployment/Service/Ingress + Route/BuildConfig without notes
+
+## Phase 5 — Observability
+- [ ] CloudWatch alarm → SNS → email working
+- [ ] Dashboard for the Phase 2/3 stack
+- [ ] (Stretch) Prometheus + Grafana on local K8s
+
+## Phase 6 — Portfolio
+- [ ] Project 1: static site + CI/CD deployed
+- [ ] Project 4: K8s deployment with Terraform, README + diagram
+- [ ] Project 5: OpenShift variant
+- [ ] Every repo has what/why/architecture/how-to-run
+
+## Certifications (optional)
+- [ ] AWS Solutions Architect Associate (after Phase 2)
+- [ ] CKA (after Phase 4)
+- [ ] Red Hat EX280 OpenShift (if targeting gov/finance)
+
+
 ## Module 0: What Is Cloud?
 - [ ] Read the module
 - [ ] Drew IaaS/PaaS/SaaS from memory
