@@ -482,4 +482,177 @@ Managed K8s services: AWS EKS, Azure AKS, GCP GKE, Red Hat OpenShift (OCP). Cove
 - [ ] Build a Docker image and push to ECR (Elastic Container Registry)
 
 ---
+
+## Module 8A: Kubernetes Deep Dive
+
+Kubernetes (K8s) = a scheduler for containers. You declare desired state in YAML; K8s keeps the cluster matching that state.
+
+### The Mental Model
+
+```
+[kubectl apply -f app.yaml]
+         |
+         v
+[API Server] ---> [etcd: desired state]
+         |
+         v
+[Scheduler] ---> picks a Node
+         |
+         v
+[kubelet on Node] ---> pulls image, starts container
+         |
+         v
+[Controller Manager] ---> watches and self-heals
+```
+
+### Core Objects
+
+| Object | What It Is | Analogy |
+|--------|-----------|---------|
+| Pod | Smallest unit. 1+ containers sharing network/storage | One apartment |
+| Deployment | Manages N identical pods, rolling updates | Property manager |
+| ReplicaSet | Keeps N pods running | Security guard replacing tenants |
+| Service | Stable IP/DNS for a set of pods | Building front desk |
+| Ingress | HTTP routing into the cluster | Mail room |
+| ConfigMap | Non-secret config key-values | Bulletin board |
+| Secret | Base64-encoded secrets | Locked mailbox |
+| Namespace | Virtual cluster inside the cluster | Building floor |
+| PersistentVolume (PV) | Cluster storage resource | Storage unit |
+| PersistentVolumeClaim (PVC) | Request for storage | Tenant renting the unit |
+| StatefulSet | Pods with stable identity (DBs) | Named, reserved apartments |
+| DaemonSet | One pod per node (agents, log shippers) | One janitor per floor |
+
+### ASCII: A Real Request Path
+
+```
+[User] ---> [Ingress: myapp.example.com]
+                  |
+                  v
+            [Service: myapp-svc (ClusterIP)]
+                  |
+        +---------+---------+
+        v         v         v
+     [Pod A]   [Pod B]   [Pod C]     <-- managed by Deployment "myapp"
+        |
+     [Container: nginx]
+```
+
+### Your First Deployment (copy-paste)
+
+```yaml
+# deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: hello
+  template:
+    metadata:
+      labels:
+        app: hello
+    spec:
+      containers:
+      - name: hello
+        image: nginxdemos/hello:latest
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello-svc
+spec:
+  selector:
+    app: hello
+  ports:
+  - port: 80
+    targetPort: 80
+  type: ClusterIP
+```
+
+```bash
+kubectl apply -f deployment.yaml
+kubectl get pods -o wide        # expect 3 running pods
+kubectl get svc hello-svc       # expect ClusterIP
+kubectl rollout status deployment/hello
+kubectl delete -f deployment.yaml
+```
+
+### ConfigMap + Secret
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+data:
+  APP_ENV: "production"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: app-secret
+type: Opaque
+stringData:
+  DB_PASSWORD: "hunter2"
+```
+
+Mount into a pod via `envFrom` or as volumes. **Never commit real secrets to git** — use External Secrets Operator or sealed-secrets in real setups.
+
+### RBAC — Who Can Do What in the Cluster
+
+```
+[ServiceAccount: deploy-bot]
+        |
+   bound by [RoleBinding]
+        |
+        v
+   [Role: can get/list/update deployments in namespace "dev"]
+```
+
+Rule: pods run as a ServiceAccount, not default. Grant least privilege, same as IAM.
+
+### Helm — Package Manager for K8s
+
+```bash
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm install my-nginx bitnami/nginx
+helm list
+helm upgrade my-nginx bitnami/nginx --set replicaCount=2
+helm uninstall my-nginx
+```
+
+A Helm chart = templated YAML + values.yaml. Think "npm for Kubernetes".
+
+### Local Cluster Options (all free on macOS)
+
+| Tool | Command | Notes |
+|------|---------|-------|
+| Docker Desktop K8s | Enable in settings | Simplest |
+| kind | `kind create cluster` | K8s-in-Docker, great for CI |
+| minikube | `minikube start` | Most features, addons |
+| k3d | `k3d cluster create` | Lightweight k3s |
+
+### Reading
+
+- [Kubernetes Basics Tutorial](https://kubernetes.io/docs/tutorials/kubernetes-basics/)
+- [Kubernetes Concepts](https://kubernetes.io/docs/concepts/)
+- [Helm Docs](https://helm.sh/docs/)
+- [Learn Kubernetes the Hard Way](https://github.com/kelseyhightower/kubernetes-the-hard-way) (advanced, do after basics)
+
+### Hands-On Checkpoint
+
+- [ ] Install kubectl + one local cluster (kind or minikube)
+- [ ] Deploy the hello Deployment above, scale to 5, watch pods appear
+- [ ] Kill a pod (`kubectl delete pod <name>`) and watch it self-heal
+- [ ] Expose it with a Service, then with an Ingress (minikube: `minikube addons enable ingress`)
+- [ ] Create a ConfigMap and Secret, mount into a pod, `kubectl exec` in and verify
+- [ ] `helm install` a chart, upgrade it, roll it back
+- [ ] Write a NetworkPolicy that allows traffic only from pods with label `app=frontend`
+
+---
 *Generated by Hermes. Last updated: 2026-09-21.*
