@@ -1,6 +1,6 @@
-# Cloud Engineer Foundations
+# Curriculum — Topic Reference
 
-> From zero to cloud engineer. One page at a time.
+> Detailed topic-by-topic reference (diagrams, reading lists, labs). Start with the roadmap in [README.md](README.md), come here when a phase tells you to.
 
 ## How to Use This Guide
 
